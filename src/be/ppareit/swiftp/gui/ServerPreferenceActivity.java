@@ -17,7 +17,7 @@
  *     Pieter Pareit - initial API and implementation
  ******************************************************************************/
 
-package be.ppareit.swiftp.gui;
+package com.zlab.datFM.swiftp.gui;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -46,15 +46,15 @@ import android.util.Log;
 import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
-import be.ppareit.swiftp.FtpServerApp;
-import be.ppareit.swiftp.FtpServerService;
-import be.ppareit.swiftp.Globals;
-import be.ppareit.swiftp_free.R;
+import com.zlab.datFM.swiftp.FtpServerApp;
+import com.zlab.datFM.swiftp.FtpServerService;
+import com.zlab.datFM.swiftp.Globals;
+import com.zlab.datFM.R;
+
 
 /**
  * This is the main activity for swiftp, it enables the user to start the server service
  * and allows the users to change the settings.
- * 
  */
 public class ServerPreferenceActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener {
@@ -66,7 +66,7 @@ public class ServerPreferenceActivity extends PreferenceActivity implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
+        addPreferencesFromResource(R.xml.swiftp_preferences);
 
         final SharedPreferences settings = PreferenceManager
                 .getDefaultSharedPreferences(this);
@@ -256,7 +256,7 @@ public class ServerPreferenceActivity extends PreferenceActivity implements
         }
     }
 
-    private void startServer() {
+    public void startServer() {
 		sendBroadcast(new Intent(FtpServerService.ACTION_START_FTPSERVER));
     }
 
