@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with SwiFTP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package be.ppareit.swiftp;
+package com.zlab.datFM.swiftp;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +42,10 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import be.ppareit.swiftp.server.SessionThread;
-import be.ppareit.swiftp.server.TcpListener;
+import com.zlab.datFM.R;
+import com.zlab.datFM.datFM;
+import com.zlab.datFM.swiftp.server.SessionThread;
+import com.zlab.datFM.swiftp.server.TcpListener;
 
 public class FtpServerService extends Service implements Runnable {
     private static final String TAG = FtpServerService.class.getSimpleName();
@@ -185,7 +187,7 @@ public class FtpServerService extends Service implements Runnable {
     private boolean loadSettings() {
         Log.d(TAG, "Loading settings");
         settings = PreferenceManager.getDefaultSharedPreferences(this);
-        port = Integer.valueOf(settings.getString("portNum", "2121"));
+        port = Integer.valueOf(settings.getString("portNum", String.valueOf(Defaults.portNumber)));
         if (port == 0) {
             // If port number from settings is invalid, use the default
             port = Defaults.portNumber;
@@ -197,8 +199,8 @@ public class FtpServerService extends Service implements Runnable {
         fullWake = settings.getBoolean("stayAwake", Defaults.stayAwake);
 
         // The username, password, and chrootDir are just checked for sanity
-        String username = settings.getString("username", null);
-        String password = settings.getString("password", null);
+        String username = settings.getString("username", Defaults.username);
+        String password = settings.getString("password", Defaults.password);
         String chrootDir = settings.getString("chrootDir", Defaults.chrootDir);
 
         validateBlock: {
@@ -256,6 +258,13 @@ public class FtpServerService extends Service implements Runnable {
                 setupListener();
             } catch (IOException e) {
                 Log.w(TAG, "Error opening port, check your network connection.");
+                datFM.datFM_state.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        datFM.notify_toast("Error opening port: "+port+", check your network connection.",true);
+                    }
+                });
+
                 // serverAddress = null;
                 cleanupAndStopService();
                 return;
@@ -268,6 +277,14 @@ public class FtpServerService extends Service implements Runnable {
 
         // A socket is open now, so the FTP server is started, notify rest of world
         sendBroadcast(new Intent(ACTION_STARTED));
+        /** Change FTP string **/
+        datFM.datFM_state.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                datFM.ftpServerTitle=getApplicationContext().getResources().getString(R.string.fileslist_stop_ftp);
+                datFM.action_ftp_server_status();
+            }
+        });
 
         while (!shouldExit) {
             if (acceptWifi) {
@@ -329,6 +346,14 @@ public class FtpServerService extends Service implements Runnable {
         releaseWifiLock();
         releaseWakeLock();
         sendBroadcast(new Intent(ACTION_STOPPED));
+        /** Change FTP string **/
+        datFM.datFM_state.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                datFM.ftpServerTitle=getApplicationContext().getResources().getString(R.string.fileslist_run_ftp);
+                datFM.action_ftp_server_status();
+            }
+        });
     }
 
     private void takeWakeLock() {
